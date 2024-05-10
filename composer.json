@@ -1,0 +1,19 @@
+﻿{
+	"name": "hehep/htemplate",
+	"description": "hehep-hvalidation 是一个PHP 验证器工具组件",
+	"license": "Apache-2.0",
+	"authors": [
+		{
+			"name": "hehe",
+			"email": ""
+		}
+	],
+	"require": {
+		"php": ">=7.1"
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"htemplate\\": "./src"
+		}
+	}
+}
