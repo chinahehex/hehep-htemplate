@@ -1,6 +1,6 @@
 {
 	"name": "hehep/htemplate",
-	"description": "hehep-hvalidation 是一个PHP 验证器工具组件",
+	"description": "hehep-htemplate 是一个PHP 模板引擎组件",
 	"license": "Apache-2.0",
 	"authors": [
 		{
