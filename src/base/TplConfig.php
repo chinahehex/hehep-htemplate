@@ -14,6 +14,12 @@ use htemplate\TemplateManager;
  */
 class TplConfig
 {
+    // 上下文对象
+    public $context = [];
+
+    // 过滤器
+    public $filters = [];
+
     // 模板文件扩展名
     public $suffix = 'html';
 

@@ -57,8 +57,8 @@ class ExpNode extends BaseNode
     {
         // 标签表达式正则
         $this->refresh();
-        $tagStart = $this->templateManager->conf->tagStart;
-        $tagStartLen = strlen($this->templateManager->conf->tagStart);
+        $tagStart = $this->templateManager->config->tagStart;
+        $tagStartLen = strlen($this->templateManager->config->tagStart);
         while (!$this->stopSearch) {
             // 命中标签格式
             $onTag = false;
@@ -85,7 +85,7 @@ class ExpNode extends BaseNode
             } else {
                 // 分离出标签名
                 $tagname_reg = '/^(\w+(:\w+)?)\s*(.*)/is';
-                preg_match($tagname_reg,$matchResult[3][0],$tagmatchResult,PREG_OFFSET_CAPTURE,0);
+                preg_match($tagname_reg,$matchResult[4][0],$tagmatchResult,PREG_OFFSET_CAPTURE,0);
 
                 if (!empty($tagmatchResult)) {
                     $tagName = $tagmatchResult[1][0];
@@ -98,7 +98,7 @@ class ExpNode extends BaseNode
 
             $tagName = trim($tagName);
             $tagExp = $this->templateCompiler->getTagExpression($tagName);
-            
+
             // 表达式
             if (is_null($tagExp)) {
                 $tagExp = $this->templateCompiler->getTagExpression("exp");

@@ -23,8 +23,6 @@ class SysTag extends BaseTag
         ['name'=>"elif", 'close'=>false,'onTag'=>true,'handler'=>'_elseif'],# 标签库
         ['name'=>"else", 'close'=>false,'onTag'=>true],# 标签库
         ['name'=>"foreach", 'close'=>true,'onTag'=>true],# 标签库
-        ['name'=>"diclist", 'close'=>false,'onTag'=>true],# 标签库
-
         ['name'=>"dict", 'close'=>false,'onTag'=>true],# 标签库
 
         ['name'=>"for", 'close'=>true,'onTag'=>true],# 标签库
@@ -50,17 +48,18 @@ class SysTag extends BaseTag
 
         ['name'=>"range", 'close'=>true,'onTag'=>true],# 标签库
         ['name'=>"in", 'close'=>true,'onTag'=>true,'handler'=>'range_tag'],# 标签库
-        ['name'=>"noin", 'close'=>true,'onTag'=>true,'handler'=>'range_tag'],# 标签库
+        ['name'=>"notin", 'close'=>true,'onTag'=>true,'handler'=>'range_tag'],# 标签库
         ['name'=>"between", 'close'=>true,'onTag'=>true,'handler'=>'range_tag'],# 标签库
-        ['name'=>"nobetween", 'close'=>true,'onTag'=>true,'handler'=>'range_tag'],# 标签库
+        ['name'=>"notbetween", 'close'=>true,'onTag'=>true,'handler'=>'range_tag'],# 标签库
         ['name'=>"pass", 'close'=>true,'onTag'=>true],# 标签库
     ];
 
     public function layout_tag(TagExpression $tagExp,$node_attrs,BaseNode $mainNode)
     {
         $attrs = $this->buildTagAttrs($node_attrs);
-        $file = $attrs['file'];//js文件名
-        $file = '<?php $this->layout('. $this->buildFuncVar($file) . ');?>';
+        $file = $attrs['file'];
+        $name = isset($attrs['name']) ?  $attrs['name'] : 'content';
+        $file = '<?php $this->layout('. $this->buildFuncVar($file) . ','.$this->buildFuncVar($name).');?>';
 
         $mainNode->writeCode($file);
     }
@@ -91,9 +90,9 @@ class SysTag extends BaseTag
         $name = $attrs['name'];//js文件名
 
         $mainNode->writeLine(sprintf('<?php $this->block("%s")?>',$name));
-        $mainNode->writeLine(sprintf($this->templateManager->conf->blockStart,$name));
+        $mainNode->writeLine(sprintf($this->templateManager->config->blockStart,$name));
         $mainNode->writeCode($subNode->getCode());
-        $mainNode->writeLine(sprintf($this->templateManager->conf->blockEnd,$name));
+        $mainNode->writeLine(sprintf($this->templateManager->config->blockEnd,$name));
     }
 
     public function widget_tag(TagExpression $tagExp,$node_attrs,BaseNode $mainNode)
@@ -102,13 +101,13 @@ class SysTag extends BaseTag
         $attrs = $this->buildTagAttrs($node_attrs);
         $name = $attrs['name'];//js文件名
         $args = isset($attrs['args']) ? $attrs['args'] : '';
-        $constructor = isset($attrs['constructor']) ? $attrs['constructor'] : 'true';;
+        $constructor = isset($attrs['constructor']) ? $attrs['constructor'] : '';;
 
         list($widget_class,$widget_method,$new_class_status) = $mainNode->templateManager->buildWidgetHandler($name);
 
         // 传递参数的方式
         if ($constructor == 'true') {
-            $widget_class  = sprintf('new %s(%s)',$widget_class,$args);
+            $widget_class  = sprintf('new %s($this->argAppend(%s))',$widget_class,$args);
             $handler_php = sprintf('[%s,\'%s\']',$widget_class,$widget_method);
             $mainNode->writeCode(sprintf('<?php echo call_user_func(%s) ?>',$handler_php));
         } else {
@@ -119,7 +118,7 @@ class SysTag extends BaseTag
                 $handler_php = sprintf('[\'%s\',\'%s\']',$widget_class,$widget_method);
             }
 
-            $mainNode->writeCode(sprintf('<?php echo call_user_func_array(%s,%s) ?>',$handler_php,$args));
+            $mainNode->writeCode(sprintf('<?php echo call_user_func_array(%s,[%s,$this->templateManager->getTemplate()]) ?>',$handler_php,$args));
         }
     }
 
@@ -195,7 +194,7 @@ class SysTag extends BaseTag
         $end = isset($attrs['end']) ? $attrs['end'] : 0;
 
         $name = $this->buildVarName($name);
-        $parseStr = sprintf('<?php for(%s;%s;%s): ?>',$name . '='.$start,$name . '<' . $end,$name . '+=' . $step);
+        $parseStr = sprintf('<?php for(%s;%s;%s): ?>',$name . '='.$start,$name . '<=' . $end,$name . '+=' . $step);
         $parseStr .= $subNode->getCode();;
         $parseStr .= '<?php endfor; ?>';
 
@@ -203,24 +202,6 @@ class SysTag extends BaseTag
     }
 
     public function dict_tag(TagExpression $tagExp,$node_attrs,BaseNode $mainNode)
-    {
-        $attrs = $this->buildTagAttrs($node_attrs);
-
-        // name,start,end,step
-        $dictlist =  $attrs['name'];
-        $key = $attrs['key'];
-        $defualt = isset($attrs['defualt']) ? $attrs['defualt'] : '';
-
-        $dictlist = $this->buildFuncVar($dictlist);
-        $key = $this->buildFuncVar($key);
-        $defualt = $this->buildFuncVar($defualt);
-
-        $parseStr = sprintf('<?php echo hdict(%s,%s,%s); ?>',$dictlist,$key,$defualt);
-
-        $mainNode->writeCode($parseStr);
-    }
-
-    public function diclist_tag(TagExpression $tagExp,$node_attrs,BaseNode $mainNode)
     {
         $attrs = $this->buildTagAttrs($node_attrs);
 
@@ -234,7 +215,7 @@ class SysTag extends BaseTag
         $glue = $this->buildFuncVar($glue);
         $defualt = $this->buildFuncVar($defualt);
 
-        $parseStr = sprintf('<?php echo hdicts(%s,%s,%s,%s); ?>',$dictlist,$keys,$glue,$defualt);
+        $parseStr = sprintf('<?php echo $this->dictFilter(%s,%s,%s,%s); ?>',$dictlist,$keys,$defualt,$glue);
 
         $mainNode->writeCode($parseStr);
     }
@@ -350,7 +331,7 @@ class SysTag extends BaseTag
 
         $attrs = $this->buildTagAttrs($node_attrs);
         $name = $this->buildVarName($attrs['name']);
-        $value = $attrs['value'];
+        $value = $this->buildVarName($attrs['value']);
 
         if (isset($attrs['op'])) {
             $op = $attrs['op'];
@@ -359,13 +340,23 @@ class SysTag extends BaseTag
         }
 
         if ($op == 'in') {
-            $cond = sprintf("in_array(%s,%s)",$value,$name);
+            $cond = sprintf("in_array(%s,%s)",$name,$value);
         } else if ($op == 'notin') {
-            $cond = sprintf("!in_array(%s,%s)",$value,$name);
+            $cond = sprintf("!in_array(%s,%s)",$name,$value);
         } else if ($op == 'between') {
-            $cond = sprintf("%s >= %s && %s <= %s",$name,$value[0],$name,$value[1]);
+            if (substr($value, 0, 1) === '$') {
+                $cond = sprintf("%s >= %s && %s <= %s",$name,"$value" . "[0]",$name,"$value" . "[1]");
+            } else {
+                $values = explode(',',$value);
+                $cond = sprintf("%s >= %s && %s <= %s",$name,$values[0],$name,$values[1]);
+            }
         } else if ($op == 'notbetween') {
-            $cond = sprintf("%s < %s && %s > %s",$name,$value[0],$name,$value[1]);
+            if (substr($value, 0, 1) === '$') {
+                $cond = sprintf("%s < %s || %s > %s",$name,"$value" . "[0]",$name,"$value" . "[1]");
+            } else {
+                $values = explode(',',$value);
+                $cond = sprintf("%s < %s || %s > %s",$name,$values[0],$name,$values[1]);
+            }
         }
 
         $parseStr   =   '<?php if('.$cond.'): ?>'.$subNode->getCode().'<?php endif; ?>';
@@ -376,11 +367,14 @@ class SysTag extends BaseTag
     public function js_tag(TagExpression $tagExp,$node_attrs,BaseNode $mainNode)
     {
         $attrs = $this->buildTagAttrs($node_attrs);
-        $src = $attrs['src'];//js文件名
-        $src = '<?php echo $this->getStaticUrl('. $this->buildFuncVar($src) . ');?>';
-        $attrs['src'] = $src;
+        list($html_attrs,$he_attrs) = $this->spiltAttrs($attrs);
+        $he_domain = isset($he_attrs['he-domain']) ? $he_attrs['he-domain'] : 'static';//js文件名
 
-        $html = $this->buildHtmlTag('script',$attrs,true);
+        $src = $html_attrs['src'];//js文件名
+        $src = '<?php echo $this->getUrl('. $this->buildFuncVar($src) . ','. $this->buildFuncVar($he_domain) .');?>';
+        $html_attrs['src'] = $src;
+
+        $html = $this->buildHtmlTag('script',$html_attrs,true);
 
         $mainNode->writeCode($html);
     }
@@ -388,11 +382,13 @@ class SysTag extends BaseTag
     public function css_tag(TagExpression $tagExp,$node_attrs,BaseNode $mainNode)
     {
         $attrs = $this->buildTagAttrs($node_attrs);
-        $href = $attrs['href'];//js文件名
-        $href = '<?php echo $this->getStaticUrl('. $this->buildFuncVar($href) . ');?>';
-        $attrs['href'] = $href;
+        list($html_attrs,$he_attrs) = $this->spiltAttrs($attrs);
+        $he_domain = isset($he_attrs['he-domain']) ? $he_attrs['he-domain'] : 'static';//js文件名
+        $href = $html_attrs['href'];//js文件名
+        $href = '<?php echo $this->getUrl('. $this->buildFuncVar($href) . ',' . $this->buildFuncVar($he_domain) .');?>';
+        $html_attrs['href'] = $href;
 
-        $html = $this->buildHtmlTag('link',$attrs,false);
+        $html = $this->buildHtmlTag('link',$html_attrs,false);
 
         $mainNode->writeCode($html);
     }

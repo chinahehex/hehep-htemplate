@@ -13,14 +13,14 @@
 
 ## 介绍
 - hehep-htemplate 是一个PHP 模板引擎组件
-- 支持{},以及<> 标签混合使用
+- 支持{{}},{},以及<> 标签混合使用
 - 支持layout(模板继承) 标签
 - 支持block 模块
 - 支持include 标签
 - 支持if 标签
 - 支持for dict,list 标签
 - 支持注释
-- 支持python 代码标签
+- 支持php代码标签
 - 支持调用方法
 - 支持加载静态文件
 - 定义变量
@@ -39,12 +39,19 @@
   
 ## 安装
 - 直接下载:
+- **gitee下载**:
+```
+git clone git@gitee.com:chinahehex/hehep-htemplate.git
 ```
 
+- **github下载**:
 ```
+git clone git@github.com:chinahehex/hehep-htemplate.git
+```
+
 - 命令安装：
 ```
-composer require hehep-htemplate
+composer require hehep/htemplate
 ```
 
 ## 组件配置
@@ -57,43 +64,41 @@ $conf = [
     'filters'=>[
         'h'=>'hehe'
     ],
-    'conf'=>[
-        // 模板文件根路径
-        'tplPath'=>'@app@/view/',
-        // 系统标签,默认自动加载sys 表达式,默认标签,书写时无需写入前缀,比如<css href="xxx" />
-        'sysTags'=>['sys'],
-        // 自定义标签,书写时必须写入前缀,比如 标签名称html,则css 标签的书写规则为: <html:css href="xxx" />
-        'customTags'=>['html'],
-        // 模板文件扩展名
-        'suffix' => 'html',
-        // 缓存文件扩展名
-        'cacheSuffix' => 'php',
-        // 是否开启模板缓存,开启后,会自动缓存代码,加快模板解析的速度
-        'onCache' => true,
-        // 模板缓存文件目录,模板编译的python代码缓存在文件中,缓存文件存储此目录中
-        'cachePath' => '/home/hehe/www/cache/htpl/',
-        // 资源地址,比如js,css,img,默认提供static(静态资源路径),res(外部资源,比如上传的文件) 字典key
-        'urls'=>[
-            'static'=>'http://eduhome.xuewei.cn/'
-        ],
-        // 模板缓存有效期,单位秒,0 表示无有效期
-        'timeout' => 5,
-        // 表达式起始符
-        'expStart' => '{{',
-        // 表达式结束符
-        'expEnd' => '}}',
-        // 结束表达式的结束符比如/ 则完整表达式为{/for} 或end,{endfor}
-        'expEndEof' => '/',
-        // 是否启用标签规则,开启后,匹配表达式 <import name="eduhome.name.yong" />
-        'onTag' => true,
-        // 标签起始符
-        'tagStart' => '<',
-        // 标签结束符
-        'tagEnd' => '>',
-        // 结束标签结束符号
-        'tagEndEof' => '/',
+    // 模板文件根路径
+    'tplPath'=>'@app@/view/',
+    // 系统标签,默认自动加载sys 表达式,默认标签,书写时无需写入前缀,比如<css href="xxx" />
+    'sysTags'=>['sys'],
+    // 自定义标签,书写时必须写入前缀,比如 标签名称html,则css 标签的书写规则为: <html:css href="xxx" />
+    'customTags'=>['html'],
+    // 模板文件扩展名
+    'suffix' => 'html',
+    // 缓存文件扩展名
+    'cacheSuffix' => 'php',
+    // 是否开启模板缓存,开启后,会自动缓存代码,加快模板解析的速度
+    'onCache' => true,
+    // 模板缓存文件目录,模板编译的python代码缓存在文件中,缓存文件存储此目录中
+    'cachePath' => '/home/hehe/www/cache/htpl/',
+    // 资源地址,比如js,css,img,默认提供static(静态资源路径),res(外部资源,比如上传的文件) 字典key
+    'urls'=>[
+        'static'=>'http://eduhome.xuewei.cn/'
     ],
-]
+    // 模板缓存有效期,单位秒,0 表示无有效期
+    'timeout' => 5,
+    // 表达式起始符
+    'expStart' => '{{',
+    // 表达式结束符
+    'expEnd' => '}}',
+    // 结束表达式的结束符比如/ 则完整表达式为{/for} 或end,{endfor}
+    'expEndEof' => '/',
+    // 是否启用标签规则,开启后,匹配表达式 <import name="eduhome.name.yong" />
+    'onTag' => true,
+    // 标签起始符
+    'tagStart' => '<',
+    // 标签结束符
+    'tagEnd' => '>',
+    // 结束标签结束符号
+    'tagEndEof' => '/',
+];
 
 ```
 
@@ -102,31 +107,35 @@ $conf = [
 ```php
 use htemplate\TemplateManager;
 
-$conf = [];
-$htemplate = new TemplateManager($conf);
-$tpl = $htemplate->getTemplate();
-// 注入变量至模板
-$tpl->assign("name","ok".rand(1,20000));
-
+$config = [];
+$htemplate = new TemplateManager($config);
 // 加载(user/add)模板,返回模板内容
 $data = [
-    'users'=>[]
+    'msg'=>'hello world'
 ];
-$html = $tpl->fetch("user/add",$data);
+$html = $htemplate->fetch("user/index",$data);
 
 ```
 - 模板html示例代码
 ```html
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{{msg}}
+</body>
+</html>
 
 ```
-
 
 ## 过滤器
 ```
 在模板页面里使用的函数或方法称为过滤器,可自定义过滤器,比如系统默认过滤器hehe
 ```
-### 自定义过滤器
+### 定义过滤器
 
 - 定义过滤器类
 ```php
@@ -136,28 +145,38 @@ class HeheFilter
 {
     public static function date_filter($format,$datetime)
     {
-        
+        return date($format,strtotime($datetime));
     }
 }
 
 ```
 
-- 配置过滤器
+### 加载过滤器
 ```php
-$conf = [
+$config = [
     'filters'=>[
         // ‘过滤器方法前缀’=>'过滤器类路径'
-        'mc_'=>'admin\htemplate\filters\HeheFilter'
-   ],
+        'he_'=>'\admin\htemplate\filters\HeheFilter'
+   ];
+
+// 方式一
+$htemplate = new htemplate\TemplateManager($config);
+
+// 方式二
+$htemplate = new htemplate\TemplateManager();
+$htemplate->addFilters(['he_'=>'\admin\htemplate\filters\HeheFilter']);
 
 ```
--  模板页面使用过滤器
+###  模板页面使用过滤器
 ```html
 <h1>
-{{:mc_date('Y-m-d','2010-02-05 05:20')}}
+{{:he_date('Y-m-d','2010-02-05 05:20')}}
 </h1>
 
 ```
+
+
+
 ## 上下文
 ```
 在模板页面里默认可以使用的数据,比如$_REQUEST,$_SESSION,$_COOKIES,等等,
@@ -187,12 +206,25 @@ class PhpwebContext
 
 ```
 
-- 配置上下文
+### 配置上下文
 ```php
-$conf = [
+$config = [
     // 上下文
     'context'=>['admin\htemplate\contexts\PhpwebContext'],
-]
+];
+
+// 方式1
+$htemplate = new htemplate\TemplateManager($config);
+
+// 方式2
+$htemplate->addContext('admin\htemplate\contexts\PhpwebContext');
+```
+
+###  模板页面使用上下文
+```html
+<h1>
+{{$_get['id']}}
+</h1>
 
 ```
 
@@ -208,7 +240,6 @@ handler:标签处理方法或函数
 
 ### 自定义标签
 
-- 自定义标签类
 ```php
 namespace admin\htemplate\tags;
 
@@ -220,7 +251,6 @@ class HtmlTag extends BaseTag
 {
     // 定义标签
     protected $tags = [
-        
         // 表单select
         ['name'=>"select", 'close'=>false,'onTag'=>true],
         // 不解析内容标签
@@ -280,16 +310,34 @@ class HtmlTag extends BaseTag
 }
 
 ```
-- 自定义标签类
+### 加载标签类
+```php
+$config = [
+    // 上下文
+    'customTags'=>['html'=>'\admin\htemplate\tags\HtmlTag'],
+];
+
+// 方式1
+$htemplate = new htemplate\TemplateManager($config);
+
+// 方式2
+$htemplate->addCustomTags(['html'=>'\admin\htemplate\tags\HtmlTag']);
+
+// 标签作为系统标签
+$htemplate->addSysTags(['\admin\htemplate\tags\HtmlTag']);
+
+```
+
+### 自定义标签模板中使用
 ```html
 <html:select name="oknd" he-name="$selectlist" />
 
-{{pass}}
+{{html:pass}}
 <!-- 此部分内容原样输出 -->
 {{include file="common/footer"}}
 {{html:js src="js/dist/seajs.min.js" }}
 
-{{/pass}}
+{{/html:pass}}
 
 ```
 
@@ -299,6 +347,7 @@ class HtmlTag extends BaseTag
 ```
 标签属性:
 file:布局文件路径
+name:替换的关键词,默认content
 ```
 - 布局文件 layout\home.html
 ```html
@@ -346,7 +395,7 @@ alias:标签别名,比如html
 {{taglib name="html"}}
 ```
 
-### block 区块 标签
+### block 区块标签
 ```
 标签属性:
 name:区块名称,对应布局文件的内容替换标识,比如__TITLE__,__CONTENT__
@@ -378,14 +427,16 @@ admin.service.Address@close
 
 - @@ 表示调用Address 类的静态close 方法
 admin.service.Address@@close
-
-
 ```
 - 示例
 ```html
-<widget name="admin.service.Address" args="['page'=>$page]" constructor="false"/>
-<widget name="admin.service.Address@@ok" args="['page'=>$page]" constructor="false"/>
-{{:hwidget('admin.service.Address@@ok',['page'=>$page],false)}}
+<widget name="htemplate.tests.common.FooterWidget" args="['msg'=>$msg]"/>
+
+<widget name="htemplate.tests.common.FooterWidget@ok" args="['msg'=>$msg]"/>
+
+<widget name="htemplate.tests.common.FooterWidget@@yes" args="['msg'=>$msg]"/>
+
+<widget name="htemplate.tests.common.FooterWidget@no" args="['data'=>['msg'=>$msg]]" constructor="true"/>
 
 ```
 
@@ -405,7 +456,14 @@ cond 或 condition: 条件语句
 </if>
 ```
 
-### foreach,for 遍历标签
+### foreach遍历标签
+```
+标签属性:
+name:遍历的数组
+value:数组元素
+key:数组键值
+index:序号,从0开始累加
+```
 - 示例
 ```html
 {{foreach name="arr" value="vo" key="k" index="i"}}
@@ -416,13 +474,25 @@ cond 或 condition: 条件语句
 
 {{/foreach}}
 
+
+
+```
+
+### for 遍历标签
+```
+标签属性:
+name:当前数值变量
+start:起始值,大于等于起始值
+end:结束值,小于等于结束值
+step:步长,每次累加的值
+```
+```html
 <!--从数字1遍历至8,每次遍历增长2-->
 {{for name="index" start="1" end="8" step="2"}}
 
 输出:{{$index}};
 
 {{/for}}
-
 ```
 
 ### js,css 静态资源标签
@@ -451,7 +521,7 @@ cond 或 condition: 条件语句
 
 ```
 
-### php 原生php标签
+### PHP原生标签
 - 示例
 ```html
 
@@ -493,9 +563,9 @@ elt:小于等于
    变量$status 等于1
 {{/eq}}
 
-{{eq name="gt" value="1"}}
+{{gt name="status" value="1"}}
    变量$status 大于1
-{{/eq}}
+{{/gt}}
 
 ```
 
@@ -517,7 +587,7 @@ elt:小于等于
 
 ```
 
-### pass 原样输出标签
+### pass原样输出标签
 - 示例
 ```html
 {{pass}}
@@ -528,17 +598,20 @@ elt:小于等于
 {{/pass}}
 ```
 
-### 其他 标签
+### 字典标签
 ```
-widget,diclist,dict
+标签属性:
+name:字典集合
+keys:目标字典值,多个键值逗号隔开
+defualt:默认值
 ```
 - 示例
 ```html
 <!--输出$dictlist 数组 键值为1 的值,如果键值不存在,则输出"无"-->
-<dict name="$dictlist" key="1" defualt="无"/>
-  
-<!--输出$dictlist 数组 键值为1,3 的值,以逗号分割 如果键值不存在,则输出"无"-->
-<diclist name="$dictlist" keys="1,3" glue="," defualt="无" />
+<dict name="$dictlist" keys="1" glue="," defualt="无"/>
+
+<dict name="$dictlist" keys="1,5" glue="," defualt="无"/>
+
 ```
 
 ## html 标签
@@ -583,5 +656,59 @@ he-checked:选中值
 <!-- 加载img 图片 -->
 <html:img src="images/logo.png"  />
 
+```
+
+
+##  系统默认过滤器
+### xss 危险标签过滤
+```html
+<h1>
+{{:he_xss($name)}}
+</h1>
+```
+
+### 过滤所有危险字符
+```html
+<h1>
+{{:he_safe($name)}}
+</h1>
+```
+
+### 加载小物件
+```html
+<h1>
+{{:he_widget('admin.service.Address@@ok',['page'=>$page])}}
+</h1>
+```
+
+### 日期格式化
+```html
+<h1>
+{{:he_date('Y-m-d',$ctime)}}
+</h1>
+```
+
+### 截取字符串
+```html
+<h1>
+{{:he_substr($name,0,10)}}
+{{:he_substr($name,0,10,'...')}}
+</h1>
+```
+
+### 显示指定字典文本
+```html
+<h1>
+{{:he_dict($dicts,$dict_key)}}
+{{:he_dict($dicts,$dict_key)}}
+</h1>
+```
+
+### 显示多个字典文本
+```html
+<h1>
+{{:he_dict($dicts,$dict_keys)}}
+{{:he_dict($dicts,$dict_keys,'多个字典文本分隔符','默认值')}}
+</h1>
 ```
 

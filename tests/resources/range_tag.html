@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+{{in name="$status" value="$in_arr"}}
+    {{$msg_in}}
+ {{else/}}
+    {{$msg_in_else}}
+{{/in}}
+
+{{notin name="$status" value="$in_arr"}}
+{{$msg_notin}}
+{{else/}}
+{{$msg_notin_else}}
+{{/notin}}
+
+{{between name="$status" value="$in_arr"}}
+{{$msg_between}}
+{{else/}}
+{{$msg_between_else}}
+{{/between}}
+
+{{notbetween name="$status" value="$in_arr"}}
+{{$msg_notbetween}}
+{{else/}}
+{{$msg_notbetween_else}}
+{{/notbetween}}
+
+</body>
+</html>
+
+
+
+
+
+

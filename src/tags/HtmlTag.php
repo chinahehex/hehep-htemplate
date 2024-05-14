@@ -20,11 +20,12 @@ class HtmlTag extends BaseTag
     public function js_tag(TagExpression $tagExp,$node_attrs,BaseNode $mainNode)
     {
         $attrs = $this->buildTagAttrs($node_attrs);
-
-        $src = $attrs['src'];//js文件名
-        $src = '<?php echo $this->getStaticUrl('. $this->buildFuncVar($src) . ');?>';
-        $attrs['src'] = $src;
-        $html = $this->buildHtmlTag('script',$attrs,true);
+        list($html_attrs,$he_attrs) = $this->spiltAttrs($attrs);
+        $he_domain = isset($he_attrs['he-domain']) ? $he_attrs['he-domain'] : 'static';//js文件名
+        $src = $html_attrs['src'];//js文件名
+        $src = '<?php echo $this->getUrl('. $this->buildFuncVar($src) . ',' . $this->buildFuncVar($he_domain) .');?>';
+        $html_attrs['src'] = $src;
+        $html = $this->buildHtmlTag('script',$html_attrs,true);
 
         $mainNode->writeCode($html);
     }
@@ -32,11 +33,14 @@ class HtmlTag extends BaseTag
     public function css_tag(TagExpression $tagExp,$node_attrs,BaseNode $mainNode)
     {
         $attrs = $this->buildTagAttrs($node_attrs);
-        $href = $attrs['href'];//js文件名
-        $href = '<?php echo $this->getStaticUrl('. $this->buildFuncVar($href) . ');?>';
-        $attrs['href'] = $href;
+        list($html_attrs,$he_attrs) = $this->spiltAttrs($attrs);
+        $he_domain = isset($he_attrs['he-domain']) ? $he_attrs['he-domain'] : 'static';//js文件名
 
-        $html = $this->buildHtmlTag('link',$attrs,false);
+        $href = $html_attrs['href'];//js文件名
+        $href = '<?php echo $this->getUrl('. $this->buildFuncVar($href) . ','. $this->buildFuncVar($he_domain) .');?>';
+        $html_attrs['href'] = $href;
+
+        $html = $this->buildHtmlTag('link',$html_attrs,false);
 
         $mainNode->writeCode($html);
     }
@@ -44,11 +48,13 @@ class HtmlTag extends BaseTag
     public function img_tag(TagExpression $tagExp,$node_attrs,BaseNode $mainNode)
     {
         $attrs = $this->buildTagAttrs($node_attrs);
-        $src = $attrs['src'];//js文件名
-        $src = '<?php echo $this->getStaticUrl('. $this->buildFuncVar($src) . ');?>';
-        $attrs['src'] = $src;
+        list($html_attrs,$he_attrs) = $this->spiltAttrs($attrs);
+        $he_domain = isset($he_attrs['he-domain']) ? $he_attrs['he-domain'] : 'static';//js文件名
+        $src = $html_attrs['src'];//js文件名
+        $src = '<?php echo $this->getUrl('. $this->buildFuncVar($src) . ',' . $this->buildFuncVar($he_domain) .');?>';
+        $html_attrs['src'] = $src;
 
-        $html = $this->buildHtmlTag('img',$attrs,false);
+        $html = $this->buildHtmlTag('img',$html_attrs,false);
 
         $mainNode->writeCode($html);
     }
@@ -196,7 +202,7 @@ class HtmlTag extends BaseTag
     protected function addJs(BaseNode $mainNode,$src,$attrs = [])
     {
         if (preg_match('/^http(s?):\/\//i',$src) === 0) {
-            $src = '<?php echo $this->getStaticUrl('. $this->buildFuncVar($src) . ');?>';
+            $src = '<?php echo $this->getUrl('. $this->buildFuncVar($src) . ');?>';
             $attrs['src'] = $src;
         } else {
             $attrs['src'] = $src;
@@ -210,7 +216,7 @@ class HtmlTag extends BaseTag
     protected function addCss(BaseNode $mainNode,$href,$attrs = [])
     {
         if (preg_match('/^http(s?):\/\//i',$src) === 0) {
-            $href = '<?php echo $this->getStaticUrl('. $this->buildFuncVar($href) . ');?>';
+            $href = '<?php echo $this->getUrl('. $this->buildFuncVar($href) . ');?>';
             $attrs['href'] = $href;
         } else {
             $attrs['href'] = $src;

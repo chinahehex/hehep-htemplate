@@ -110,29 +110,29 @@ class BaseTag
 
             if (empty($expAttrs['expStart'])) {
                 $expAttrs['expStart'] = sprintf('%s%s(.*?)%s',
-                    $this->templateManager->conf->expStartReg,$expAttrs['name'],
-                    $this->templateManager->conf->expEndReg);
+                    $this->templateManager->config->expStartReg,$expAttrs['name'],
+                    $this->templateManager->config->expEndReg);
             }
 
             //　结束符号
             if (empty($expAttrs['expEnd']) && !empty($tag['close'])) {
-                $eofName = isset($tag['eof']) ? $tag['eof'] :  $this->templateManager->conf->expEndEofReg;
+                $eofName = isset($tag['eof']) ? $tag['eof'] :  $this->templateManager->config->expEndEofReg;
                 $expAttrs['expEnd'] = sprintf('%s%s%s%s',
-                    $this->templateManager->conf->expStartReg,$eofName,$expAttrs['name'],
-                    $this->templateManager->conf->expEndReg);
+                    $this->templateManager->config->expStartReg,$eofName,$expAttrs['name'],
+                    $this->templateManager->config->expEndReg);
             }
 
             if (!empty($tag['onTag'])) {
                 // 标签表达式
                 $expAttrs['tagStart'] = sprintf('%s%s(.*?)%s',
-                    $this->templateManager->conf->tagStartReg,$expAttrs['name'],
-                    $this->templateManager->conf->tagEndReg);
+                    $this->templateManager->config->tagStartReg,$expAttrs['name'],
+                    $this->templateManager->config->tagEndReg);
 
                 if (!empty($tag['close'])) {
-                    $eofName = isset($tag['eof']) ? $tag['eof'] : $this->templateManager->conf->tagEndEofReg;
+                    $eofName = isset($tag['eof']) ? $tag['eof'] : $this->templateManager->config->tagEndEofReg;
                     $expAttrs['tagEnd'] = sprintf('%s%s%s%s',
-                        $this->templateManager->conf->tagStartReg,$eofName,$expAttrs['name'],
-                        $this->templateManager->conf->tagEndReg);
+                        $this->templateManager->config->tagStartReg,$eofName,$expAttrs['name'],
+                        $this->templateManager->config->tagEndReg);
                 }
             }
 

@@ -104,11 +104,16 @@ class BaseTemplate
 
         // 替换
         if (!empty($this->layout)) {
-            $content = str_replace("__CONTENT__",$content,$this->layout['content']);
+            $layout_replace_name = '__' . strtoupper($this->layout['name']) . '__';
+            if (strpos($this->layout['content'], $layout_replace_name) !== false) {
+                $content = str_replace($layout_replace_name,$content,$this->layout['content']);
+            } else {
+                $content = $this->layout['content'] . $content;
+            }
         }
 
         foreach ($this->blocks as $name) {
-            $pattern = '/' . sprintf($this->templateManager->conf->blockStart . '(.*)' . $this->templateManager->conf->blockEnd,$name,$name) . '/is';
+            $pattern = '/' . sprintf($this->templateManager->config->blockStart . '(.*)' . $this->templateManager->config->blockEnd,$name,$name) . '/is';
             $block_content = '';
             $content = preg_replace_callback($pattern,function($matches) use (&$block_content,$name) {
                 $block_content = $matches[1];
@@ -174,13 +179,13 @@ class BaseTemplate
         return array_merge($this->data,$data);
     }
 
-    protected function layout($tpl,$params =  [])
+    protected function layout($tpl,$name = 'content')
     {
         $layoutTempl = clone $this;
         $layoutTempl->templateCompiler = null;
         $data = [];
         $this->layout['content'] = $layoutTempl->fetch($tpl,$this->getData($data));
-        $this->layout['params'] = $params;
+        $this->layout['name'] = $name;
     }
 
     protected function block($name)
@@ -210,6 +215,12 @@ class BaseTemplate
 
     public function buildTemplateFilePath($templateFile)
     {
+        // 如文件已经有后缀,不处理
+        $ext = pathinfo(basename($templateFile),PATHINFO_EXTENSION);
+        if (!empty($ext)) {
+            return $this->config->tplPath . $templateFile;
+        }
+
         if (empty($this->config->suffix)) {
             $tplFilePath = $this->config->tplPath . $templateFile;
         } else {
@@ -373,8 +384,7 @@ class BaseTemplate
             $tplCode = file_get_contents($tplCacheFile);
         } else {
             // 开始编译
-            $tplFileContent = file_get_contents($tplFile);;
-
+            $tplFileContent = file_get_contents($tplFile);
             $templateCompiler = $this->getTemplateCompiler();
             $tplCode = $templateCompiler->compiler($tplFileContent);
             // 代码存储至缓存文件
@@ -430,8 +440,57 @@ class BaseTemplate
         return $this->templateCompiler;
     }
 
-    protected function getStaticUrl($url)
+    protected function getUrl($url,$domain = 'static')
     {
-        return $this->config->urls['static'] . $url;
+        return $this->config->urls[$domain] . $url;
+    }
+
+
+    /**
+     * 字典显示文本
+     *<B>说明：</B>
+     *<pre>
+     *  略
+     *</pre>
+     * @param array $dictList
+     * @param string $keys 字典key列表
+     * @param string $glue 分隔符
+     * @param string $defualt 默认值
+     * @return string
+     */
+    public  function dictFilter($dictList,$keys,$defualt = '',$glue = ',')
+    {
+        $dicIds = [];
+        if (!is_array($keys)) {
+            $dicIds = explode(',',$keys);
+        } else {
+            $dicIds = $keys;
+        }
+
+        if (count($dicIds) == 1) {
+            if (isset($dictList[$dicIds[0]])) {
+                $dicnames[] = $dictList[$dicIds[0]];
+            }
+        } else {
+            $dicnames = [];
+            foreach ($dictList as $id=>$name) {
+                if (in_array($id,$dicIds)) {
+                    $dicnames[] = $name;
+                }
+            }
+        }
+
+        if (empty($dicnames)) {
+            return $defualt;
+        }
+
+        return implode($glue,$dicnames);
+    }
+
+    protected function argAppend($data = [])
+    {
+        $data['template'] = $this;
+
+        return $data;
     }
 }

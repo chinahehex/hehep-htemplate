@@ -14,26 +14,6 @@ use htemplate\contexts\PhpwebContext;
  */
 class TemplateManager
 {
-    /**
-     * 过滤器
-     *<B>说明：</B>
-     *<pre>
-     *  略
-     *</pre>
-     * @var array
-     */
-    public $filters = [];
-
-    /**
-     * 上下文
-     *<B>说明：</B>
-     *<pre>
-     *  略
-     *</pre>
-     * @var array
-     */
-    public $context = [];
-
     protected $_context = [];
 
     /**
@@ -44,7 +24,7 @@ class TemplateManager
      *</pre>
      * @var TplConfig
      */
-    public $conf = [];
+    public $config = [];
 
     /**
      * 标签库
@@ -60,13 +40,13 @@ class TemplateManager
 
     protected $_intiStatus = false;
 
-    public function __construct(array $attrs = [])
+    public function __construct(array $config = [])
     {
-        if (!empty($attrs)) {
-            foreach ($attrs as $attr => $value) {
-                $this->$attr = $value;
-            }
+        if (!empty($config)) {
+            $this->config = $config;
         }
+
+        $this->init();
     }
 
     protected function init()
@@ -77,36 +57,69 @@ class TemplateManager
         }
 
         $this->_intiStatus = true;
-        $conf = $this->conf;
-        $conf['templateManager'] = $this;
+        $config = $this->config;
+        $config['templateManager'] = $this;
 
-        $this->conf = new TplConfig($conf);
+        $this->config = new TplConfig($config);
 
         // 加载系统标签标签库
-        foreach ($this->conf->sysTags as $alias=>$tagName) {
-
-            if (is_string($alias)) {
-                $this->getTag($tagName,$alias,true);
-            } else {
-                $this->getTag($tagName,'',true);
-            }
-        }
+        $this->addTags($this->config->sysTags,true);
 
         // 加载自定义标签库
-        foreach ($this->conf->customTags as $alias=>$tagName) {
-            if (is_string($alias)) {
-                $this->getTag($tagName,$alias,false);
-            } else {
-                $this->getTag($tagName,'',false);
-            }
-        }
+        $this->addTags($this->config->customTags,false);
 
-        // 加载上线文
-        $this->_context = $this->buildContextHandler($this->context);
+        // 加载上下文
+        $this->loadContext($this->config->context);
+
         // 加载过滤器
-        $filters = $this->buildFilters();
+        $filters = $this->buildFilters($this->config->filters);
 
         eval($filters);
+    }
+
+    public function addSysTags($sysTags = [])
+    {
+        $this->addTags($sysTags,true);
+        $this->config->sysTags = array_merge($this->config->sysTags,$sysTags);
+
+        return $this;
+    }
+
+    protected function addTags($tags = [],$isSysTag = false)
+    {
+        foreach ($tags as $alias=>$tagName) {
+            if (is_string($alias)) {
+                $this->getTag($tagName,$alias,$isSysTag);
+            } else {
+                $this->getTag($tagName,'',$isSysTag);
+            }
+        }
+    }
+
+    public function addCustomTags($customTags = [])
+    {
+        $this->addTags($customTags,false);
+        $this->config->customTags = array_merge($this->config->customTags,$customTags);
+
+        return $this;
+    }
+
+    public function addFilters($filters = [])
+    {
+        $filters = $this->buildFilters($filters);
+        eval($filters);
+    }
+
+    public function addContext($context)
+    {
+        $this->loadContext([$context]);
+    }
+
+    protected function loadContext($contexts)
+    {
+        foreach ($contexts as $context) {
+            $this->_context[] = $this->buildContextHandler($context);
+        }
     }
 
     public function getTemplate():Template
@@ -115,12 +128,11 @@ class TemplateManager
 
         $attrs = [
             'templateManager'=>$this,
-            'config'=>$this->conf
+            'config'=>$this->config
         ];
 
         return new Template($attrs);
     }
-
 
     /**
      * 获取标签对应的表达式
@@ -129,6 +141,7 @@ class TemplateManager
      *  略
      *</pre>
      * @param string $tagName 标签名
+     * @param string $tagAlias 标签别名
      * @return array
      */
     public function getTagExpression($tagName,$tagAlias):array
@@ -180,7 +193,7 @@ class TemplateManager
         return $tag;
     }
 
-    public function buildContextHandler($ctxHandler)
+    protected function buildContextHandler($ctxHandler)
     {
         if (empty($ctxHandler)) {
             return [new PhpwebContext(),'handle'];;
@@ -202,6 +215,7 @@ class TemplateManager
             $newClassStatus = true;
         } else {
             $handlerClass = $handler;
+            $newClassStatus = true;
         }
 
         if (empty($handlerMethod)) {
@@ -225,6 +239,7 @@ class TemplateManager
                 $newClassStatus = true;
             } else {
                 $handlerClass = $handler;
+                $newClassStatus = true;
             }
 
             if (empty($handlerMethod)) {
@@ -249,7 +264,12 @@ class TemplateManager
             return [];
         }
 
-        return call_user_func_array($this->_context,[]);
+        $ctx_params = [];
+        foreach ($this->_context as $ctx) {
+            $ctx_params = array_merge($ctx_params,call_user_func_array($ctx,[]));
+        }
+
+        return $ctx_params;
     }
 
     /**
@@ -258,9 +278,9 @@ class TemplateManager
      *<pre>
      *  略
      *</pre>
-     * @return BaseTag
+     * @return string
      */
-    protected function buildFilters()
+    protected function buildFilters($filters)
     {
 
         $suffix = '_filter';
@@ -276,8 +296,7 @@ class TemplateManager
 
         $filter_codes = [];
 
-        foreach ($this->filters as $alias=>$filter) {
-
+        foreach ($filters as $alias=>$filter) {
             // 读取类的所有方法名称
 
             if (strpos($filter,'\\') !== false) {
@@ -297,7 +316,7 @@ class TemplateManager
                     $methodName = $alias . $methodName;
                 }
 
-                $filter_codes[] = $this->formatStr($code,[
+                $filter_codes[] = $this->buildFilterFunc($code,[
                     'filter_method_name'=>$methodName,
                     'filter_class'=>'\'' . $filterClass . '\'',
                     'method_name'=>'\'' . $method . '\''
@@ -308,7 +327,7 @@ class TemplateManager
         return implode("\r\n",$filter_codes);
     }
 
-    protected function formatStr(string $html,array $data = [])
+    protected function buildFilterFunc(string $func_code,array $data = [])
     {
 
         if (!empty($data)) {
@@ -317,10 +336,10 @@ class TemplateManager
             },array_keys($data));
 
             $replace = array_values($data);
-            $html = str_replace($find,$replace,$html);
+            $func_code = str_replace($find,$replace,$func_code);
         }
 
-        return $html;
+        return $func_code;
     }
 
 
@@ -334,6 +353,30 @@ class TemplateManager
         }
 
         return $nodeClass;
+    }
+
+    /**
+     * 加载模板
+     *<B>说明：</B>
+     *<pre>
+     *　略
+     *</pre>
+     * @param string $tpl 模板名称
+     * @param array $data 模板变量
+     * @return string
+     */
+    public function fetch($tpl ,$data = [])
+    {
+        $template = $this->getTemplate();
+
+        return $template->fetch($tpl,$data);
+    }
+
+    public function addUrls($urls)
+    {
+        $this->config->urls = array_merge($this->config->urls,$urls);
+
+        return $this;
     }
 
 }

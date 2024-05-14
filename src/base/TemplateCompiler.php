@@ -79,7 +79,7 @@ class TemplateCompiler
     public function compiler(&$content)
     {
 
-        $node = $this->templateManager->conf->node;
+        $node = $this->templateManager->config->node;
         /** @var  BaseNode $expNode**/
 
         $expNode = new $node($content,[
@@ -107,7 +107,7 @@ class TemplateCompiler
 
         $blocks_str = implode("\r\n",$this->static_blocks);
         $blocks_str .= "\r\n" . implode("\r\n\r\n",$this->html_blocks);
-        $htmlBlockTag = $this->templateManager->conf->htmlBlock;
+        $htmlBlockTag = $this->templateManager->config->htmlBlock;
         if (strpos($htmlBlockTag,$content) !== false) {
             $content = str_replace($htmlBlockTag,$blocks_str,$content);
         } else {
@@ -136,7 +136,7 @@ class TemplateCompiler
         if (!empty($tagAlias)) {
             $this->pageTags[$tagAlias] = $tagName;
         } else {
-            $this->pageTags[] = $tagName;
+            $this->pageTags[$tagName] = $tagName;
         }
 
         $this->_expressions = [];
@@ -160,7 +160,7 @@ class TemplateCompiler
 
         $this->_expressions['exp'] = new TagExpression([
             'name'=>'exp','outbefore'=>true,'onMatch'=>false,'handler'=>[$this->templateManager->getTag("sys"),'_exp'],'expStart'=>sprintf('%s(.+?)%s',
-                $this->templateManager->conf->expStartReg,$this->templateManager->conf->expEndReg)
+                $this->templateManager->config->expStartReg,$this->templateManager->config->expEndReg)
         ]);
     }
 
@@ -194,20 +194,20 @@ class TemplateCompiler
             }
         }
 
-        $exp = '[^' . $this->templateManager->conf->expEndReg .']+';
+        $exp = '[^' . $this->templateManager->config->expEndReg .']+';
         $expreg = sprintf('(?:%s)(%s)(?:%s)',
-            $this->templateManager->conf->expStartReg,
+            $this->templateManager->config->expStartReg,
             $exp,
-            $this->templateManager->conf->expEndReg
+            $this->templateManager->config->expEndReg
         );
-        
+
         $tagreg = '';
         if (!empty($expNames)) {
-            $tagreg = sprintf('%s(?:(%s)\b)(([^%s])*)%s',
-                $this->templateManager->conf->tagStart,
+            $tagreg = sprintf('%s(?:(%s)\b)((.*=".*".*)?|[^'.$this->templateManager->config->tagEnd.']*)%s',
+                $this->templateManager->config->tagStart,
                 implode('|',$expNames),
-                $this->templateManager->conf->tagEnd,
-                $this->templateManager->conf->tagEnd
+                $this->templateManager->config->tagEnd,
+                $this->templateManager->config->tagEnd
             );
         }
 

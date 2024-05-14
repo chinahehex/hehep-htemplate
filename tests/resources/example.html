@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!--变量-->
+{{msg}}}
+
+
+<!--过滤器-->
+{{:he_date('Y-m-d',$addtime)}}
+
+<!--标签-->
+
+<!--if-->
+<if cond="$age > 14">
+    {{$age_type_text1}}
+    <else/>
+    {{$age_type_text2}}
+</if>
+<!--foreacch-->
+<foreach name="names" value="name">
+    {{$name}}
+</foreach>
+
+
+</body>
+</html>

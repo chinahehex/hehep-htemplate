@@ -47,7 +47,7 @@ class HeheFilter
      * @param bool $constructor 参数是否传入构造器
      * @return string
      */
-    public static function w_filter($wclass,$args = [],$constructor = true)
+    public static function widget_filter($wclass,$args = [],$constructor = true)
     {
         list($widget_class,$widget_method,$new_class_status) = static::buildWidgetHandler($wclass);
 
@@ -114,26 +114,10 @@ class HeheFilter
             $slice = join ( "", array_slice ( $match [0], $start, $length ) );
         }
 
-        return $suffix ? $slice . '...' : $slice;
-    }
-
-    /**
-     * 字典显示文本
-     *<B>说明：</B>
-     *<pre>
-     *  略
-     *</pre>
-     * @param array $dictlist
-     * @param string $key 字典key
-     * @param string $defualt 默认值
-     * @return string
-     */
-    public static function dict_filter($dictlist = [],$key,$defualt = '')
-    {
-        if (isset($dictlist[$key])) {
-            return $dictlist[$key];
+        if (is_bool($suffix)) {
+            return $suffix ? $slice . '...' : $slice;
         } else {
-            return $defualt;
+            return $suffix != '' ? $slice . $suffix : $slice;
         }
     }
 
@@ -149,7 +133,7 @@ class HeheFilter
      * @param string $defualt 默认值
      * @return string
      */
-    public static function dicts_filter($dictList,$keys,$glue = ',',$defualt = '')
+    public static function dict_filter($dictList,$keys,$defualt = '',$glue = ',')
     {
         $dicIds = [];
         if (!is_array($keys)) {
@@ -158,10 +142,16 @@ class HeheFilter
             $dicIds = $keys;
         }
 
-        $dicnames =[];
-        foreach ($dictList as $id=>$name) {
-            if (in_array($id,$dicIds)) {
-                $dicnames[] = $name;
+        if (count($dicIds) == 1) {
+            if (isset($dictList[$dicIds[0]])) {
+                $dicnames[] = $dictList[$dicIds[0]];
+            }
+        } else {
+            $dicnames = [];
+            foreach ($dictList as $id=>$name) {
+                if (in_array($id,$dicIds)) {
+                    $dicnames[] = $name;
+                }
             }
         }
 
@@ -176,7 +166,6 @@ class HeheFilter
     {
 
         $handler = '\\' . str_replace(".","\\",$handler);
-
         $newClassStatus = false;
         if (strpos($handler,"@@") !== false) {
             list($handlerClass,$handlerMethod) = explode("@@",$handler);
@@ -185,6 +174,7 @@ class HeheFilter
             $newClassStatus = true;
         } else {
             $handlerClass = $handler;
+            $newClassStatus = true;
         }
 
         if (empty($handlerMethod)) {
