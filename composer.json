@@ -10,9 +10,14 @@
 	"require": {
 		"php": ">=7.1"
 	},
+	"autoload": {
+		"psr-4": {
+			"htemplate\\": "src/"
+		}
+	},
 	"autoload-dev": {
 		"psr-4": {
-			"htemplate\\": "./src"
+			"htemplate\\tests\\": "tests/"
 		}
 	}
 }
