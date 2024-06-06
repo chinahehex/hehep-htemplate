@@ -1,15 +1,6 @@
 # hehep-htemplate
 
-## 任务列表
-- 支持html属性变量　ok
-- 支持标签属性变量ok
-- 支持两种解析方式,加快编译速度
-- 支持过滤器 ok
-- 标签支持别名定义 ok
-- 支持小物件 ok
-- 定义常用过滤器(日期格式,截取字符串,数字格式,字典)ok
-- 支持其他框架上下文
-- 支持html 标签ok
+
 
 ## 介绍
 - hehep-htemplate 是一个PHP 模板引擎组件
@@ -38,7 +29,6 @@
 - 提供小物件(widget)
   
 ## 安装
-- 直接下载:
 - **gitee下载**:
 ```
 git clone git@gitee.com:chinahehex/hehep-htemplate.git
@@ -711,4 +701,16 @@ he-checked:选中值
 {{:he_dict($dicts,$dict_keys,'多个字典文本分隔符','默认值')}}
 </h1>
 ```
+
+
+## 任务列表
+- 支持html属性变量　ok
+- 支持标签属性变量ok
+- 支持两种解析方式,加快编译速度
+- 支持过滤器 ok
+- 标签支持别名定义 ok
+- 支持小物件 ok
+- 定义常用过滤器(日期格式,截取字符串,数字格式,字典)ok
+- 支持其他框架上下文
+- 支持html 标签ok
 
