@@ -41,7 +41,7 @@ git clone git@github.com:chinahehex/hehep-htemplate.git
 
 - 命令安装：
 ```
-composer require hehep/htemplate
+composer require hehex/hehep-htemplate
 ```
 
 ## 组件配置
