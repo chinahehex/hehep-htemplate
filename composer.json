@@ -1,6 +1,6 @@
 {
 	"name": "hehex/hehep-htemplate",
-	"description": "hehep-htemplate 是一个PHP 模板引擎组件",
+	"description": "hehep-htemplate 是一个PHP模板引擎基础组件",
 	"license": "Apache-2.0",
 	"authors": [
 		{
