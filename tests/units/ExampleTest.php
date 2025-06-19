@@ -40,7 +40,5 @@ class ExampleTest extends TestCase
         $this->assertRegExp('/hehep|thinkphp|yii2/',$this->htemplate->fetch('example.html',[
             'names'=>['hehep','thinkphp','yii2']
         ]));
-
-
     }
 }

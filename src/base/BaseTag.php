@@ -136,6 +136,7 @@ class BaseTag
                 }
             }
 
+            unset($expAttrs['close']);
             $tagExpList[$expAttrs['name']] = new TagExpression($expAttrs);
         }
 

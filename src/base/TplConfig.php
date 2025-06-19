@@ -81,10 +81,10 @@ class TplConfig
     public $htmlBlock = '__HTMLBLOCK__';
 
     // 系统标签,默认自动加载sys 表达式,默认标签,书写时无需写入前缀,比如<css href="xxx" />
-    public $sysTags = [];
+    public $sysTags = ['sys'];
 
     // 自定义标签,书写时必须写入前缀,比如 标签名称html,则css 标签的书写规则为: <html:css href="xxx" />
-    public $customTags = [];
+    public $customTags = ['html'];
 
     // 解析节点类
     public $node = '';

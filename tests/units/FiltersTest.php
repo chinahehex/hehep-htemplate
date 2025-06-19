@@ -4,7 +4,7 @@ use htemplate\tests\TestCase;
 
 class FiltersTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp():void
     {
         parent::setUp();
         $this->htemplate->addFilters(['he_'=>'hehe']);

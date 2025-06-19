@@ -52,8 +52,8 @@ class BaseTemplate
     public function __construct(array $attrs = [])
     {
         if (!empty($attrs)) {
-            foreach ($attrs as $attr => $value) {
-                $this->$attr = $value;
+            foreach ($attrs as $name => $value) {
+                $this->{$name} = $value;
             }
         }
     }
